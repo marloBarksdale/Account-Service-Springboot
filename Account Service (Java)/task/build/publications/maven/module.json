@@ -1,0 +1,85 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.my.groupid",
+    "module": "my-artifact",
+    "version": "1.0-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.6"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "my-artifact-1.0-SNAPSHOT-plain.jar",
+          "url": "my-artifact-1.0-SNAPSHOT-plain.jar",
+          "size": 1167,
+          "sha512": "c3e69f2a17b2803a2171beaa648a175a1ec50f5283c3fa643179f3b4835c0c09c178e6aba5a42a47a527e5d21bc3e7df75e92f9a188286d327b476137e17be17",
+          "sha256": "88491555089ecefbef1bbba21895c4e2863e956ba7f178dc7db0cebcdc21ffca",
+          "sha1": "06830a28a494e1bd7da40a85566b262e117ff2ef",
+          "md5": "9cd98d74dba9641f194531e4ef5419ac"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter"
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-actuator"
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-web"
+        },
+        {
+          "group": "com.h2database",
+          "module": "h2"
+        },
+        {
+          "group": "org.hibernate",
+          "module": "hibernate-validator",
+          "version": {
+            "requires": "6.1.0.Final"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "my-artifact-1.0-SNAPSHOT-plain.jar",
+          "url": "my-artifact-1.0-SNAPSHOT-plain.jar",
+          "size": 1167,
+          "sha512": "c3e69f2a17b2803a2171beaa648a175a1ec50f5283c3fa643179f3b4835c0c09c178e6aba5a42a47a527e5d21bc3e7df75e92f9a188286d327b476137e17be17",
+          "sha256": "88491555089ecefbef1bbba21895c4e2863e956ba7f178dc7db0cebcdc21ffca",
+          "sha1": "06830a28a494e1bd7da40a85566b262e117ff2ef",
+          "md5": "9cd98d74dba9641f194531e4ef5419ac"
+        }
+      ]
+    }
+  ]
+}
