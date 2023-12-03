@@ -1,5 +1,6 @@
 package account.exceptions;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.LocalDateTime;
@@ -19,7 +20,7 @@ public class CustomErrorMessage {
     private String path;
 
 
-    public CustomErrorMessage(int status,LocalDateTime timestamp, String error, String message, String path) {
+    public CustomErrorMessage(int status, LocalDateTime timestamp, String error, String message, String path) {
         this.timestamp = timestamp;
         this.status = status;
         this.error = error;
@@ -43,6 +44,7 @@ public class CustomErrorMessage {
         this.path = path;
     }
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime getTimestamp() {
         return timestamp;
     }

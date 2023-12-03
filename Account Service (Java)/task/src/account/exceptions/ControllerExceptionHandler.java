@@ -1,22 +1,20 @@
 package account.exceptions;
 
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
-import org.springframework.boot.web.error.ErrorAttributeOptions;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
-import java.util.Set;
 
-@RestControllerAdvice
+//@RestControllerAdvice
 public class ControllerExceptionHandler {
 
 
@@ -24,7 +22,7 @@ public class ControllerExceptionHandler {
     @ExceptionHandler({ValidationException.class, ConstraintViolationException.class})
     ResponseEntity<?> exceptionHandler(Exception e, ServletWebRequest request) {
 
-      
+
         String requestURI = request.getRequest().getRequestURI();
 
 
@@ -42,7 +40,7 @@ public class ControllerExceptionHandler {
         String requestURI = request.getRequest().getRequestURI();
 
 
-        CustomErrorMessage body = new CustomErrorMessage(e.getBody().getStatus(), LocalDateTime.now(), "Bad Request", e.getReason(), requestURI);
+        CustomErrorMessage body = new CustomErrorMessage(e.getBody().getStatus(), LocalDateTime.now(), HttpStatus.valueOf(e.getStatusCode().value()).getReasonPhrase(), e.getReason(), requestURI);
 
 
         return new ResponseEntity<>(body, HttpStatus.valueOf(body.getStatus()));
@@ -64,18 +62,7 @@ public class ControllerExceptionHandler {
     }
 
 
-    public ResponseEntity handle(ConstraintViolationException constraintViolationException) {
-        Set<ConstraintViolation<?>> violations = constraintViolationException.getConstraintViolations();
-        String errorMessage = "";
-        if (!violations.isEmpty()) {
-            StringBuilder builder = new StringBuilder();
-            violations.forEach(violation -> builder.append(" " + violation.getMessage()));
-            errorMessage = builder.toString();
-        } else {
-            errorMessage = "ConstraintViolationException occured.";
-        }
-        return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
-    }
+
 
 
 }

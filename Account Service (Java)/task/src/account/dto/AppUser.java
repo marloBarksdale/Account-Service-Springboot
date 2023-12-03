@@ -2,12 +2,13 @@ package account.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.*;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Length;
+
+import java.util.*;
 
 @Entity
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -38,7 +39,6 @@ public class AppUser {
 
     @Length(min = 12, message = "Password length must be 12 chars minimum!")
     private String password;
-    private String authority;
 
 
     public AppUser(String name, String lastName, String email, String password) {
@@ -46,7 +46,6 @@ public class AppUser {
         this.lastname = lastName;
         this.email = email;
         this.password = password;
-        this.authority = "user";
     }
 
 
@@ -97,14 +96,44 @@ public class AppUser {
     }
 
 
-    public String getAuthority() {
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE,
 
-        return authority;
+    })
+    @JoinTable(name = "user_groups",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "group_id"
+            ))
+    private Set<Group> userGroups = new HashSet<>();
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    public Set<Group> getUserGroupsSet() {
+        return userGroups;
     }
 
-    public void setAuthority(String role) {
-        this.authority = role;
+
+    @JsonProperty("roles")
+    public List<String> getUserGroups() {
+
+        List<String> grouping = new ArrayList<>();
+
+        for (var usergroup : userGroups) {
+
+            grouping.add(usergroup.getName());
+        }
+
+
+        Collections.sort(grouping);
+        return grouping;
+
     }
+
+
+    public void setUserGroups(Set<Group> userGroups) {
+        this.userGroups = userGroups;
+    }
+
 
     @Override
     public String toString() {
@@ -114,7 +143,12 @@ public class AppUser {
                 ", lastname='" + lastname + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", authority='" + authority + '\'' +
+                ", userGroups=" + userGroups +
                 '}';
+    }
+
+    public void addUserGroups(Group group) {
+
+        userGroups.add(group);
     }
 }

@@ -9,12 +9,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class AccountServiceApplication implements CommandLineRunner {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccountServiceApplication.class);
+
     public static void main(String[] args) {
         SpringApplication.run(AccountServiceApplication.class, args);
+
+
     }
-
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccountServiceApplication.class);
 
     @Override
     public void run(String... args) throws Exception {

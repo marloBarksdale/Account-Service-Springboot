@@ -5,10 +5,7 @@ import account.repositories.UserRepository;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -31,7 +28,7 @@ public class UserExistConstraintValidator implements ConstraintValidator<UserExi
 
 
         for (var payment : values) {
-            if (!userRepository.existsAppUserByEmail(payment.getEmployee())) {
+            if (!userRepository.existsAppUserByEmailIgnoreCase(payment.getEmployee())) {
                 return false;
             }
 

@@ -1,17 +1,15 @@
 package account.controllers;
 
-import account.dto.AppUser;
 import account.dto.Payment;
 import account.dto.UserAdapter;
 import account.repositories.PaymentRepository;
 import account.repositories.UserRepository;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
@@ -19,11 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @Validated
@@ -43,9 +38,8 @@ public class PaymentController {
     }
 
     @PostMapping("/api/acct/payments")
-
-    public ResponseEntity<?> savePayments(@RequestBody @Valid @UserExistConstraint List<Payment> payments, Errors errors) {
-
+    @PreAuthorize("hasAuthority('ACCOUNTANT')")
+    public ResponseEntity<?> savePayments(@RequestBody(required = false) List<Payment> payments, Errors errors) {
 
         if (errors.hasErrors()) {
 
@@ -60,18 +54,21 @@ public class PaymentController {
     }
 
 
-    @GetMapping("/api/acct/payments")
-    public ResponseEntity<?> getPayments() {
-
-
-        List<Payment> payments = paymentRepository.findAll();
-
-
-        return ResponseEntity.ok(payments);
-    }
+//    @GetMapping("/api/acct/payments")
+//    @PreAuthorize("hasAuthority('ACCOUNTANT')")
+//
+//    public ResponseEntity<?> getPayments(@AuthenticationPrincipal UserAdapter user) {
+//
+//
+//        List<Payment> payments = paymentRepository.findAll();
+//
+//
+//        return ResponseEntity.ok(payments);
+//    }
 
 
     @PutMapping("/api/acct/payments")
+    @PreAuthorize("hasAuthority('ACCOUNTANT')")
     public ResponseEntity<?> updateSalary(@Valid @RequestBody Payment paymentUpdate) {
 
 
@@ -94,6 +91,7 @@ public class PaymentController {
 
 
     @GetMapping("/api/empl/payment")
+    @PreAuthorize("hasAnyAuthority('USER', 'ACCOUNTANT')")
     public ResponseEntity<?> getPaymentInfo(@AuthenticationPrincipal UserAdapter user, @DateTimeFormat(pattern = "MM-yyyy") YearMonth period) {
 
 
