@@ -39,6 +39,22 @@ public class AppUser {
 
     @Length(min = 12, message = "Password length must be 12 chars minimum!")
     private String password;
+    @Column(name = "account_non_locked")
+    private boolean accountNonLocked;
+    @Column(name = "failed_attempt")
+    private int failedAttempt;
+    @Column(name = "lock_time")
+    private Date lockTime;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE,
+
+    })
+    @JoinTable(name = "user_groups",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "group_id"
+            ))
+    private Set<Group> userGroups = new HashSet<>();
 
 
     public AppUser(String name, String lastName, String email, String password) {
@@ -47,7 +63,6 @@ public class AppUser {
         this.email = email;
         this.password = password;
     }
-
 
     public AppUser() {
 
@@ -60,7 +75,6 @@ public class AppUser {
     public void setId(Long id) {
         this.id = id;
     }
-
 
     public String getName() {
         return name;
@@ -94,18 +108,6 @@ public class AppUser {
     public void setPassword(String password) {
         this.password = password;
     }
-
-
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE,
-
-    })
-    @JoinTable(name = "user_groups",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "group_id"
-            ))
-    private Set<Group> userGroups = new HashSet<>();
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public Set<Group> getUserGroupsSet() {
@@ -150,5 +152,33 @@ public class AppUser {
     public void addUserGroups(Group group) {
 
         userGroups.add(group);
+    }
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    public boolean isAccountNonLocked() {
+        return accountNonLocked;
+    }
+
+    public void setAccountNonLocked(boolean accountNonLocked) {
+        this.accountNonLocked = accountNonLocked;
+
+    }
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    public int getFailedAttempt() {
+        return failedAttempt;
+    }
+
+    public void setFailedAttempt(int failedAttempt) {
+        this.failedAttempt = failedAttempt;
+    }
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    public Date getLockTime() {
+        return lockTime;
+    }
+
+    public void setLockTime(Date lockTime) {
+        this.lockTime = lockTime;
     }
 }

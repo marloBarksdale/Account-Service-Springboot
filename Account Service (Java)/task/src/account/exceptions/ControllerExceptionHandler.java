@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 
-//@RestControllerAdvice
+@RestControllerAdvice
+
 public class ControllerExceptionHandler {
+
 
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -36,6 +37,8 @@ public class ControllerExceptionHandler {
     @ExceptionHandler({ResponseStatusException.class})
     ResponseEntity<?> exceptionHandler(ResponseStatusException e, ServletWebRequest request) {
 
+
+        System.out.println("ExceptionHandler");
 
         String requestURI = request.getRequest().getRequestURI();
 
@@ -60,9 +63,6 @@ public class ControllerExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
-
-
-
 
 
 }

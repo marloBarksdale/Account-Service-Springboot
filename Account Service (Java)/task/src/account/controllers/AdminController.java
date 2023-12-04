@@ -8,6 +8,7 @@ import account.dto.UserAdapter;
 import account.repositories.EventRepository;
 import account.repositories.GroupRepository;
 import account.repositories.UserRepository;
+import account.services.UserDetailsServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -34,11 +36,13 @@ public class AdminController {
 
     private EventRepository eventRepository;
 
+    private UserDetailsServiceImpl userDetailsService;
 
-    public AdminController(UserRepository userRepository, GroupRepository groupRepository, EventRepository eventRepository) {
+    public AdminController(UserRepository userRepository, GroupRepository groupRepository, EventRepository eventRepository, UserDetailsServiceImpl userDetailsService) {
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
         this.eventRepository = eventRepository;
+        this.userDetailsService = userDetailsService;
     }
 
     @GetMapping("/api/admin/**")
@@ -178,7 +182,64 @@ public class AdminController {
     }
 
 
+    @PutMapping("api/admin/user/access")
+    public ResponseEntity updateAccess(@RequestBody AccessUpdate accessUpdate, @AuthenticationPrincipal UserAdapter admin, HttpServletRequest request) {
+
+
+        AppUser user = userRepository.findAppUserByEmailIgnoreCase(accessUpdate.user()).orElse(null);
+
+
+        if (user != null) {
+            UserAdapter adapter = new UserAdapter(user);
+
+
+            if (user.getUserGroups().contains("ROLE_ADMINISTRATOR")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can't lock the ADMINISTRATOR!");
+            }
+
+
+            String operation = accessUpdate.operation.toUpperCase();
+
+
+            if ("LOCK".equals(operation)) {
+                String object = "Lock user " + user.getEmail();
+
+                user.setAccountNonLocked(false);
+                eventRepository.save(new SecurityEvent("LOCK_USER", admin.getEmail(), object, request.getRequestURI()));
+                return ResponseEntity.ok(new StatusResponse("User " + user.getEmail() + " locked!"));
+            } else if ("UNLOCK".equals(operation)) {
+
+                String object = "Unlock user " + user.getEmail();
+                eventRepository.save(new SecurityEvent("UNLOCK_USER", admin.getEmail(), object, request.getRequestURI()));
+                user.setAccountNonLocked(true);
+
+                userDetailsService.resetFailedAttempts(user.getEmail());
+                userRepository.save(user);
+                return ResponseEntity.ok(new StatusResponse("User " + user.getEmail() + " unlocked!"));
+            }
+
+
+            userRepository.save(user);
+
+
+        }
+            throw new UsernameNotFoundException("Not  found");
+
+
+
+
+
+
+    }
+
+
     record CustomResponse(String user, String status) {
+    }
+
+    public record AccessUpdate(String user, String operation) {
+    }
+
+    public record StatusResponse(String status) {
     }
 
 

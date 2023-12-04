@@ -1,5 +1,6 @@
 package account.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -42,6 +43,7 @@ public class SecurityEvent {
 
     }
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public Long getId() {
         return id;
     }

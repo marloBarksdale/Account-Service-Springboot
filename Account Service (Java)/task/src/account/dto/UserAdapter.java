@@ -46,20 +46,18 @@ public class UserAdapter implements UserDetails {
     }
 
 
-
-
     @Override
     public String getPassword() {
         return user.getPassword();
     }
 
-    public AppUser getUser() {
-        return this.user;
-    }
-
     public void setPassword(String password) {
 
         user.setPassword(password);
+    }
+
+    public AppUser getUser() {
+        return this.user;
     }
 
     public String getLastname() {
@@ -79,7 +77,7 @@ public class UserAdapter implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return user.isAccountNonLocked();
     }
 
     @Override

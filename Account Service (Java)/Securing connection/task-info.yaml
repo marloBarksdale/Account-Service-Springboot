@@ -149,6 +149,739 @@ files:
         };
       }
     learner_created: false
+  - name: src/account/config/DataLoader.java
+    visible: true
+    learner_created: true
+  - name: src/account/dto/Payment.java
+    visible: true
+    learner_created: true
+  - name: src/account/config/SecurityConfig.java
+    visible: true
+    text: |
+      package account.config;
+      
+      import org.springframework.beans.factory.annotation.Autowired;
+      import org.springframework.context.annotation.Bean;
+      import org.springframework.context.annotation.Configuration;
+      import org.springframework.http.HttpMethod;
+      import org.springframework.security.config.Customizer;
+      import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+      import org.springframework.security.config.http.SessionCreationPolicy;
+      import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+      import org.springframework.security.crypto.password.PasswordEncoder;
+      import org.springframework.security.web.SecurityFilterChain;
+      
+      @Configuration
+      public class SecurityConfig {
+      
+      
+      //    @Autowired
+      //    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+      
+          @Bean
+          public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+              http
+                      .httpBasic(Customizer.withDefaults())
+      
+                      .csrf(csrf -> csrf.disable()) // For Postman
+                      .headers(headers -> headers.frameOptions().disable()) // For the H2 console
+                      .authorizeHttpRequests(auth -> auth  // manage access
+                                      .requestMatchers(HttpMethod.POST, "/api/auth/changepass").authenticated()
+                                      .requestMatchers("/api/empl/payment").authenticated()
+                                      .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
+                                      .requestMatchers("/error", "/actuator/shutdown").permitAll()
+                                      .anyRequest().authenticated()
+                              // other matchers
+                      )
+                      .sessionManagement(sessions -> sessions
+                              .sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // no session
+      
+      
+              return http.build();
+          }
+      
+      
+          @Bean
+      
+          public PasswordEncoder passwordEncoder() {
+      
+              return new BCryptPasswordEncoder(13);
+          }
+      
+      }
+    learner_created: true
+  - name: src/account/dto/UserAdapter.java
+    visible: true
+    text: |
+      package account.dto;
+      
+      import org.springframework.beans.factory.annotation.Autowired;
+      import org.springframework.security.core.GrantedAuthority;
+      import org.springframework.security.core.authority.SimpleGrantedAuthority;
+      import org.springframework.security.core.userdetails.UserDetails;
+      
+      import java.util.Collection;
+      import java.util.List;
+      
+      public class UserAdapter implements UserDetails {
+      
+      
+          private final SignUpDto user;
+      
+          public UserAdapter(SignUpDto user) {
+              this.user = user;
+          }
+      
+          @Override
+          public Collection<? extends GrantedAuthority> getAuthorities() {
+              return null;
+          }
+      
+          @Override
+          public String getPassword() {
+              return user.getPassword();
+          }
+      
+          public SignUpDto getUser() {
+              return this.user;
+          }
+      
+          public void setPassword(String password) {
+      
+              user.setPassword(password);
+          }
+      
+          @Override
+          public String getUsername() {
+              return user.getName();
+          }
+      
+          @Override
+          public boolean isAccountNonExpired() {
+              return true;
+          }
+      
+          @Override
+          public boolean isAccountNonLocked() {
+              return true;
+          }
+      
+          @Override
+          public boolean isCredentialsNonExpired() {
+              return true;
+          }
+      
+          public String getEmail() {
+              return user.getEmail();
+          }
+      
+          @Override
+          public boolean isEnabled() {
+              return true;
+          }
+      }
+    learner_created: true
+  - name: src/account/config/CheckPassword.java
+    visible: true
+    text: |
+      package account.config;
+      
+      import org.springframework.beans.factory.annotation.Autowired;
+      import org.springframework.security.crypto.password.PasswordEncoder;
+      
+      import java.util.ArrayList;
+      import java.util.List;
+      
+      public class CheckPassword {
+      
+      
+          private static List<String> hackerDatabase;
+      
+      
+          private PasswordEncoder passwordEncoder;
+      
+      
+          static {
+      
+              hackerDatabase = new ArrayList<>();
+      
+      
+              hackerDatabase.addAll(List.of("PasswordForJanuary", "PasswordForFebruary", "PasswordForMarch", "PasswordForApril",
+                      "PasswordForMay", "PasswordForJune", "PasswordForJuly", "PasswordForAugust",
+                      "PasswordForSeptember", "PasswordForOctober", "PasswordForNovember", "PasswordForDecember"));
+      
+          }
+      
+      
+          public static boolean checkPassWords(String userPassword, PasswordEncoder passwordEncoder) {
+      
+      
+              for (var password : hackerDatabase) {
+      
+                  var encoded = passwordEncoder.encode(password);
+                  if (passwordEncoder.matches(userPassword, encoded)) {
+                      return true;
+                  }
+              }
+      
+              return false;
+          }
+      
+      }
+    learner_created: true
+  - name: src/account/controllers/TestController.java
+    visible: true
+    text: |
+      package account.controllers;
+      
+      import account.repositories.UserRepository;
+      import account.dto.SignUpDto;
+      import account.dto.UserAdapter;
+      import org.springframework.http.HttpStatus;
+      import org.springframework.http.ResponseEntity;
+      import org.springframework.security.core.annotation.AuthenticationPrincipal;
+      import org.springframework.web.bind.annotation.GetMapping;
+      import org.springframework.web.bind.annotation.RestController;
+      
+      import java.util.Optional;
+      
+      @RestController
+      public class TestController {
+      
+          private final UserRepository userRepository;
+      
+          public TestController(UserRepository userRepository) {
+              this.userRepository = userRepository;
+          }
+      
+      
+          @GetMapping("/api/empl/payment")
+          public ResponseEntity<SignUpDto> getPaymentInfo(@AuthenticationPrincipal UserAdapter user){
+      
+      
+              Optional<SignUpDto> signUpDtoByEmail = userRepository.findSignUpDtoByEmail((user.getEmail()));
+      
+              return new ResponseEntity<>(signUpDtoByEmail.orElse(null),HttpStatus.OK);
+      
+      
+      
+      
+      
+          }
+      }
+    learner_created: true
+  - name: src/account/controllers/AdminController.java
+    visible: true
+    learner_created: true
+  - name: src/account/exceptions/ErrorMessage.java
+    visible: true
+    text: |
+      package account.exceptions;
+      
+      public class ErrorMessage {
+      
+      
+          public ErrorMessage(String number, String message) {
+          }
+      }
+    learner_created: true
+  - name: src/account/dto/AppUser.java
+    visible: true
+    text: |
+      package account.dto;
+      
+      import com.fasterxml.jackson.annotation.JsonInclude;
+      import com.fasterxml.jackson.annotation.JsonProperty;
+      import jakarta.persistence.Entity;
+      import jakarta.persistence.GeneratedValue;
+      import jakarta.persistence.GenerationType;
+      import jakarta.persistence.Id;
+      import jakarta.validation.constraints.*;
+      import org.hibernate.validator.constraints.Length;
+      
+      @Entity
+      @JsonInclude(JsonInclude.Include.NON_NULL)
+      
+      public class SignUpDto {
+      
+          @Id
+          @GeneratedValue(strategy = GenerationType.IDENTITY)
+          private Long id;
+      
+          @NotBlank
+          @NotEmpty
+          private String name;
+      
+          @NotBlank
+          @NotEmpty
+          private String lastname;
+      
+      
+          @NotBlank
+          @NotEmpty
+          @Email(regexp = ".*@acme.com")
+          private String email;
+      
+      
+          @NotBlank
+          @NotEmpty
+      
+          @Length(min = 12, message = "Password length must be 12 chars minimum!")
+          private String password;
+          private String authority;
+      
+      
+          public SignUpDto(String name, String lastName, String email, String password) {
+              this.name = name;
+              this.lastname = lastName;
+              this.email = email;
+              this.password = password;
+              this.authority = "user";
+          }
+      
+      
+          public SignUpDto() {
+      
+          }
+      
+          public Long getId() {
+              return id;
+          }
+      
+          public void setId(Long id) {
+              this.id = id;
+          }
+      
+      
+          public String getName() {
+              return name;
+          }
+      
+          public void setName(String name) {
+              this.name = name;
+          }
+      
+          public String getLastname() {
+              return lastname;
+          }
+      
+          public void setLastname(String lastname) {
+              this.lastname = lastname;
+          }
+      
+          public String getEmail() {
+              return email;
+          }
+      
+          public void setEmail(String email) {
+              this.email = email;
+          }
+      
+          @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+          public String getPassword() {
+              return password;
+          }
+      
+          public void setPassword(String password) {
+              this.password = password;
+          }
+      
+      
+          public String getAuthority() {
+      
+              return authority;
+          }
+      
+          public void setAuthority(String role) {
+              this.authority = role;
+          }
+      
+          @Override
+          public String toString() {
+              return "SignUpDto{" +
+                      "name='" + name + '\'' +
+                      ", lastName='" + lastname + '\'' +
+                      ", email='" + email + '\'' +
+                      ", password='" + password + '\'' +
+                      '}';
+          }
+      }
+    learner_created: true
+  - name: src/account/controllers/AuditorController.java
+    visible: true
+    learner_created: true
+  - name: src/account/dto/Group.java
+    visible: true
+    learner_created: true
+  - name: src/account/exceptions/ControllerExceptionHandler.java
+    visible: true
+    text: "package account.exceptions;\n\nimport jakarta.validation.ConstraintViolationException;\n\
+    import jakarta.validation.ValidationException;\nimport org.springframework.boot.web.error.ErrorAttributeOptions;\n\
+    import org.springframework.http.HttpHeaders;\nimport org.springframework.http.HttpStatus;\n\
+    import org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.*;\n\
+    import org.springframework.web.context.request.ServletWebRequest;\nimport org.springframework.web.context.request.WebRequest;\n\
+    import org.springframework.web.server.ResponseStatusException;\n\nimport java.time.LocalDateTime;\n\
+    \n@RestControllerAdvice\npublic class ControllerExceptionHandler {\n\n\n    @ResponseStatus(HttpStatus.BAD_REQUEST)\n\
+    \    @ExceptionHandler({ValidationException.class, ConstraintViolationException.class})\n\
+    \    ResponseEntity<?> exceptionHandler(Exception e, ServletWebRequest request)\
+    \ {\n\n      \n        String requestURI = request.getRequest().getRequestURI();\n\
+    \n\n        CustomErrorMessage body = new CustomErrorMessage(HttpStatus.BAD_REQUEST.value(),\
+    \ LocalDateTime.now(), \"Bad Request\", e.getMessage().replaceAll(\".*: \", \"\
+    \"), requestURI);\n\n\n        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);\n\
+    \    }\n\n    @ResponseStatus(HttpStatus.BAD_REQUEST)\n    @ExceptionHandler({ResponseStatusException.class})\n\
+    \    ResponseEntity<?> exceptionHandler(ResponseStatusException e, ServletWebRequest\
+    \ request) {\n\n\n        String requestURI = request.getRequest().getRequestURI();\n\
+    \n\n        CustomErrorMessage body = new CustomErrorMessage(e.getBody().getStatus(),\
+    \ LocalDateTime.now(), \"Bad Request\", e.getReason(), requestURI);\n\n\n    \
+    \    return new ResponseEntity<>(body, HttpStatus.valueOf(body.getStatus()));\n\
+    \    }\n\n\n}"
+    learner_created: true
+  - name: src/account/repositories/EventRepository.java
+    visible: true
+    learner_created: true
+  - name: src/account/controllers/PaymentController.java
+    visible: true
+    learner_created: true
+  - name: src/account/services/UserDetailsServiceImpl.java
+    visible: true
+    text: |
+      package account.services;
+      
+      import account.dto.SignUpDto;
+      import account.dto.UserAdapter;
+      import account.repositories.UserRepository;
+      import org.springframework.security.core.userdetails.UserDetails;
+      import org.springframework.security.core.userdetails.UserDetailsService;
+      import org.springframework.security.core.userdetails.UsernameNotFoundException;
+      import org.springframework.stereotype.Service;
+      
+      @Service
+      public class UserDetailsServiceImpl  implements UserDetailsService {
+          private UserRepository userRepository;
+      
+          public UserDetailsServiceImpl(UserRepository userRepository) {
+              this.userRepository = userRepository;
+          }
+      
+          @Override
+          public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+      
+      
+              SignUpDto user = userRepository.findSignUpDtoByEmail(email.toLowerCase()).orElseThrow(()->new UsernameNotFoundException("Not found"));
+      
+      
+              return new UserAdapter(user);
+          }
+      }
+    learner_created: true
+  - name: src/account/config/CustomAccessDeniedHandler.java
+    visible: true
+    learner_created: true
+  - name: src/account/dto/SecurityEvent.java
+    visible: true
+    learner_created: true
+  - name: src/account/exceptions/CustomErrorMessage.java
+    visible: true
+    text: |-
+      package account.exceptions;
+      
+      import com.fasterxml.jackson.annotation.JsonInclude;
+      
+      import java.time.LocalDateTime;
+      
+      @JsonInclude(JsonInclude.Include.NON_NULL)
+      public class CustomErrorMessage {
+      
+      
+          private LocalDateTime timestamp;
+          private int status;
+      
+          private String error;
+      
+          private String message;
+      
+      
+          private String path;
+      
+      
+          public CustomErrorMessage(int status,LocalDateTime timestamp, String error, String message, String path) {
+              this.timestamp = timestamp;
+              this.status = status;
+              this.error = error;
+              this.message = message;
+              this.path = path;
+          }
+      
+          public int getStatus() {
+              return status;
+          }
+      
+          public void setStatus(int status) {
+              this.status = status;
+          }
+      
+          public String getPath() {
+              return path;
+          }
+      
+          public void setPath(String path) {
+              this.path = path;
+          }
+      
+          public LocalDateTime getTimestamp() {
+              return timestamp;
+          }
+      
+          public void setTimestamp(LocalDateTime timestamp) {
+              this.timestamp = timestamp;
+          }
+      
+          public String getMessage() {
+              return message;
+          }
+      
+          public void setMessage(String message) {
+              this.message = message;
+          }
+      
+          public String getError() {
+              return error;
+          }
+      
+          public void setError(String error) {
+              this.error = error;
+          }
+      }
+    learner_created: true
+  - name: src/account/dto/NewPassword.java
+    visible: true
+    text: |
+      package account.dto;
+      
+      import jakarta.persistence.Entity;
+      import jakarta.persistence.Transient;
+      import jakarta.validation.constraints.NotBlank;
+      import jakarta.validation.constraints.NotEmpty;
+      import org.hibernate.validator.constraints.Length;
+      import org.springframework.context.annotation.Bean;
+      import org.springframework.stereotype.Component;
+      import org.springframework.validation.annotation.Validated;
+      
+      
+      public class NewPassword {
+      
+          @NotBlank(message = "Password cannot be empty!")
+          @NotEmpty(message = "Password cannot be empty!")
+          @Length(min = 12, message = "Password length must be 12 chars minimum!")
+          private String new_password;
+      
+          public NewPassword(String new_password) {
+              this.new_password = new_password;
+          }
+      
+          public String new_password() {
+              return new_password;
+          }
+      
+          public NewPassword() {
+      
+          }
+      
+          public String getNew_password() {
+              return new_password;
+          }
+      
+          public void setNew_password(String new_password) {
+              this.new_password = new_password;
+          }
+      
+          @Override
+          public String toString() {
+              return "NewPassword[" + "new_password=" + new_password + ']';
+          }
+      
+      
+      }
+    learner_created: true
+  - name: src/account/config/UserAuthenticationEntryPoint.java
+    visible: true
+    learner_created: true
+  - name: src/account/repositories/PaymentRepository.java
+    visible: true
+    learner_created: true
+  - name: src/account/controllers/AuthController.java
+    visible: true
+    text: |+
+      package account.controllers;
+      
+      import account.config.CheckPassword;
+      import account.dto.NewPassword;
+      import account.dto.SignUpDto;
+      import account.dto.UserAdapter;
+      import account.repositories.UserRepository;
+      import com.fasterxml.jackson.annotation.JsonProperty;
+      import jakarta.validation.Valid;
+      import org.springframework.http.HttpStatus;
+      import org.springframework.http.ResponseEntity;
+      import org.springframework.security.core.annotation.AuthenticationPrincipal;
+      import org.springframework.security.core.userdetails.UserDetails;
+      import org.springframework.security.crypto.password.PasswordEncoder;
+      import org.springframework.validation.Errors;
+      import org.springframework.validation.annotation.Validated;
+      import org.springframework.web.bind.annotation.*;
+      import org.springframework.web.server.ResponseStatusException;
+      
+      @RestController
+      @Validated
+      public class AuthController {
+      
+      
+          private UserRepository userRepository;
+          private PasswordEncoder passwordEncoder;
+      
+      
+          public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+              this.userRepository = userRepository;
+              this.passwordEncoder = passwordEncoder;
+          }
+      
+      
+          @PostMapping("/api/auth/signup")
+          @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+          public ResponseEntity<?> signup(@Valid @RequestBody SignUpDto signUpDto, Errors errors) {
+      
+      
+              if (errors.hasErrors()) {
+      
+                  throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error");
+              }
+      
+              if (CheckPassword.checkPassWords(signUpDto.getPassword(), passwordEncoder)) {
+      
+                  throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The password is in the hacker's database!");
+              }
+      
+      
+              if (userRepository.findSignUpDtoByEmail(signUpDto.getEmail().toLowerCase()).isPresent()) {
+      
+                  throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User exist!");
+              }
+      
+      
+      
+      
+      
+              signUpDto.setPassword(passwordEncoder.encode(signUpDto.getPassword()));
+              signUpDto.setEmail(signUpDto.getEmail().toLowerCase());
+              SignUpDto user = userRepository.save(signUpDto);
+      
+      
+              return ResponseEntity.ok(user);
+      
+      
+          }
+      
+          @PostMapping("/api/auth/changepass")
+          public ResponseEntity<?> changePass(@AuthenticationPrincipal UserAdapter userDetails, @RequestBody @Valid NewPassword newPassword, Errors errors) {
+      
+      
+              if (errors.hasErrors()) {
+      
+                  throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error");
+              }
+      
+              if (CheckPassword.checkPassWords(newPassword.new_password(), passwordEncoder)) {
+      
+                  throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The password is in the hacker's database!");
+              }
+      
+      
+              if (passwordEncoder.matches(newPassword.new_password(), userDetails.getPassword())) {
+                  throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The passwords must be different!");
+              }
+      
+      
+              userDetails.setPassword(passwordEncoder.encode(newPassword.getNew_password()));
+      
+      
+              userRepository.save(userDetails.getUser());
+      
+              return ResponseEntity.ok(new CustomResponse(userDetails.getEmail(), "The password has been updated successfully"));
+      
+          }
+      
+      
+          record CustomResponse(String email, String status) {
+          }
+      
+      
+      }
+    
+    
+    
+    learner_created: true
+  - name: src/account/controllers/UserExistConstraint.java
+    visible: true
+    learner_created: true
+  - name: src/account/repositories/IAuthenticationFacade.java
+    visible: true
+    learner_created: true
+  - name: src/account/controllers/UserExistConstraintValidator.java
+    visible: true
+    learner_created: true
+  - name: src/account/repositories/UserRepository.java
+    visible: true
+    text: |
+      package account.repositories;
+      
+      import account.dto.SignUpDto;
+      import org.springframework.data.jpa.repository.JpaRepository;
+      
+      import java.util.Optional;
+      
+      public interface UserRepository extends JpaRepository<SignUpDto, Long> {
+      
+      
+      
+          Optional<SignUpDto> findSignUpDtoByEmail(String email);
+          Optional<SignUpDto> findSignUpDtoByName(String name);
+      
+      }
+    learner_created: true
+  - name: src/account/repositories/GroupRepository.java
+    visible: true
+    learner_created: true
+  - name: src/account/config/AuthListener.java
+    visible: true
+    learner_created: true
+  - name: src/resources/logback.xml
+    visible: true
+    text: |-
+      <configuration>
+          <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+              <encoder>
+                  <pattern>%d{HH:mm} %-5level %logger{36} - %msg%n</pattern>
+              </encoder>
+          </appender>
+      
+          <root level="info">
+              <appender-ref ref="STDOUT" />
+          </root>
+      </configuration>
+    learner_created: true
+  - name: src/account/dto/ErrorDto.java
+    visible: true
+    learner_created: true
+  - name: src/resources/keystore/keystore.p12
+    visible: true
+    learner_created: true
+  - name: "~.mv.db"
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/learn/step/16607#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">Hyperskill</a>
+    to continue learning.
+  time: "Mon, 04 Dec 2023 03:58:06 UTC"
 record: -1

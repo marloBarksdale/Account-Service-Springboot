@@ -67,6 +67,7 @@ public class AuthController {
 
         appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
         appUser.setEmail(appUser.getEmail().toLowerCase());
+        appUser.setAccountNonLocked(true);
 
 
         if (userRepository.findAll().isEmpty()) {
@@ -129,7 +130,6 @@ public class AuthController {
         Group group = groupRepository.findByCode("user");
         user.addUserGroups(group);
     }
-
 
 
     record CustomResponse(String email, String status) {
